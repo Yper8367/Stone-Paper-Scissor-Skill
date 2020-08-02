@@ -1,0 +1,267 @@
+# -*- coding: utf-8 -*-
+
+# This sample demonstrates handling intents from an Alexa skill using the Alexa Skills Kit SDK for Python.
+# Please visit https://alexa.design/cookbook for additional examples on implementing slots, dialog management,
+# session persistence, api calls, and more.
+# This sample is built using the handler classes approach in skill builder.
+import logging
+import ask_sdk_core.utils as ask_utils
+
+import random 
+import os
+from ask_sdk_s3.adapter import S3Adapter
+s3_adapter = S3Adapter(bucket_name=os.environ["S3_PERSISTENCE_BUCKET"])
+
+from ask_sdk_core.skill_builder import SkillBuilder
+from ask_sdk_core.dispatch_components import AbstractRequestHandler
+from ask_sdk_core.dispatch_components import AbstractExceptionHandler
+from ask_sdk_core.handler_input import HandlerInput
+
+from ask_sdk_model import Response
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+
+class LaunchRequestHandler(AbstractRequestHandler):
+    """Handler for Skill Launch."""
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+
+        return ask_utils.is_request_type("LaunchRequest")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        session_attr = handler_input.attributes_manager.session_attributes
+        session_attr["a_score"] = 0
+        session_attr["u_score"] = 0
+        session_attr["ac"] = "stone"
+        speak_output = random.choice(["Alright! Say stone or paper or scissor on my mark. 3. 2. 1","Roger","Aye! Captain","Get ready, 3. 2. 1","Try your luck, 3. 2. 1"])
+        reprompt_text = "Choose any one from stone paper or scissor"
+        
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(reprompt_text)
+                .response
+        )
+
+
+class StonePaperScissorIntentHandler(AbstractRequestHandler):
+    """Handler for Stone Paper Scissor Intent."""
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        
+        return ask_utils.is_intent_name("StonePaperScissorIntent")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        session_attr = handler_input.attributes_manager.session_attributes
+        user_ip = handler_input.request_envelope.request.intent.slots["obj"].value
+        #speak_output = "I choose {} You chose {} ".format(session_attr["alexa_choice"],user_ip)
+        session_attr["ac"] = random.choice(["stone","paper","scissor"])
+        if session_attr["ac"] == user_ip:
+            speak_output = " You copy me. I choose {} ,Score remains same {} {}".format(session_attr["ac"],session_attr["a_score"],session_attr["u_score"])
+            return (
+            handler_input.response_builder
+                .speak(speak_output)
+                #.ask(speak_output)
+                .response
+               )
+        elif session_attr["ac"] == 'stone' and handler_input.request_envelope.request.intent.slots["obj"].value == 'scissor':
+            session_attr["a_score"] = session_attr["a_score"] + 1
+            speak_output = "i will go with {} ,I won. Score is {} {}".format(session_attr["ac"],session_attr["a_score"],session_attr["u_score"])
+            return (
+            handler_input.response_builder
+                .speak(speak_output)
+                #.ask(speak_output)
+                .response
+               )
+        elif session_attr["ac"] == 'paper' and handler_input.request_envelope.request.intent.slots["obj"].value == 'stone':
+            session_attr["a_score"] = session_attr["a_score"] + 1
+            speak_output = "I take {} ,I won. Score is {} {}".format(session_attr["ac"],session_attr["a_score"],session_attr["u_score"])
+            return (
+            handler_input.response_builder 
+                .speak(speak_output)
+                #.ask(speak_output)
+                .response
+        )
+        elif session_attr["ac"] == 'scissor' and handler_input.request_envelope.request.intent.slots["obj"].value == 'paper':
+            session_attr["a_score"] = session_attr["a_score"] + 1
+            speak_output = "{} ,I won. Score is {} {}".format(session_attr["ac"],session_attr["a_score"],session_attr["u_score"])
+            return (
+            handler_input.response_builder
+                .speak(speak_output)
+                #.ask(speak_output)
+                .response
+               )
+        elif handler_input.request_envelope.request.intent.slots["obj"].value == 'stone' and session_attr["ac"] == 'scissor':
+            session_attr["u_score"] = session_attr["u_score"] + 1
+            speak_output = "I choose {} ,U won. Score is {} {}".format(session_attr["ac"],session_attr["a_score"],session_attr["u_score"])
+            return (
+            handler_input.response_builder
+                .speak(speak_output)
+                #.ask(speak_output)
+                .response
+                 )
+        elif handler_input.request_envelope.request.intent.slots["obj"].value == 'paper' and session_attr["ac"] == 'stone':
+            session_attr["u_score"] = session_attr["u_score"] + 1
+            speak_output = "i will take {} ,U won. Score is {} {}".format(session_attr["ac"],session_attr["a_score"],session_attr["u_score"])
+            return (
+            handler_input.response_builder
+                .speak(speak_output)
+                #.ask(speak_output)
+                .response
+                )
+        elif handler_input.request_envelope.request.intent.slots["obj"].value == 'scissor' and session_attr["ac"] == 'paper':
+            session_attr["u_score"] = session_attr["u_score"] + 1
+            speak_output = "{}, U won. Score is {} {}".format(session_attr["ac"],session_attr["a_score"],session_attr["u_score"])
+            return (
+            handler_input.response_builder
+                .speak(speak_output)
+                #.ask(speak_output)
+                .response
+                )
+        else:
+            session_attr["u_score"] = session_attr["u_score"] + 1
+            speak_output = "{}, U won. Score is {} {}".format(session_attr["ac"],session_attr["a_score"],session_attr["u_score"])
+            return (
+            handler_input.response_builder
+                .speak(speak_output)
+                #.ask(speak_output)
+                .response
+             )
+
+class PlayAgainIntentHandler(AbstractRequestHandler):
+    """Handler for Help Intent."""
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("PlayAgainIntent")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        speak_output = random.choice(["Great","Come on then ,choose","OK","Roger","Try your luck","show me your skills"])
+        reprompt_text = "Choose any one from stone paper or scissor"
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(reprompt_text)
+                .response
+        )
+
+
+class HelpIntentHandler(AbstractRequestHandler):
+    """Handler for Help Intent."""
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("AMAZON.HelpIntent")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        speak_output = "choose one from stone paper scissor. Say play again if you want to play again"
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(speak_output)
+                .response
+        )
+
+
+class CancelOrStopIntentHandler(AbstractRequestHandler):
+    """Single handler for Cancel and Stop Intent."""
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return (ask_utils.is_intent_name("AMAZON.CancelIntent")(handler_input) or
+                ask_utils.is_intent_name("AMAZON.StopIntent")(handler_input))
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        speak_output = random.choose(["Goodbye!","Nice playing with you","Hope you come back again","Bye!"])
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .response
+        )
+
+
+class SessionEndedRequestHandler(AbstractRequestHandler):
+    """Handler for Session End."""
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_request_type("SessionEndedRequest")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+
+        # Any cleanup logic goes here.
+
+        return handler_input.response_builder.response
+
+
+class IntentReflectorHandler(AbstractRequestHandler):
+    """The intent reflector is used for interaction model testing and debugging.
+    It will simply repeat the intent the user said. You can create custom handlers
+    for your intents by defining them above, then also adding them to the request
+    handler chain below.
+    """
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_request_type("IntentRequest")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        intent_name = ask_utils.get_intent_name(handler_input)
+        speak_output = "You just triggered " + intent_name + "."
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                # .ask("add a reprompt if you want to keep the session open for the user to respond")
+                .response
+        )
+
+
+class CatchAllExceptionHandler(AbstractExceptionHandler):
+    """Generic error handling to capture any syntax or routing errors. If you receive an error
+    stating the request handler chain is not found, you have not implemented a handler for
+    the intent being invoked or included it in the skill builder below.
+    """
+    def can_handle(self, handler_input, exception):
+        # type: (HandlerInput, Exception) -> bool
+        return True
+
+    def handle(self, handler_input, exception):
+        # type: (HandlerInput, Exception) -> Response
+        logger.error(exception, exc_info=True)
+
+        speak_output = "Sorry, I had trouble doing what you asked. Please try again."
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(speak_output)
+                .response
+        )
+
+# The SkillBuilder object acts as the entry point for your skill, routing all request and response
+# payloads to the handlers above. Make sure any new handlers or interceptors you've
+# defined are included below. The order matters - they're processed top to bottom.
+
+
+sb = SkillBuilder()
+
+sb.add_request_handler(LaunchRequestHandler())
+sb.add_request_handler(StonePaperScissorIntentHandler())
+sb.add_request_handler(PlayAgainIntentHandler())
+sb.add_request_handler(HelpIntentHandler())
+sb.add_request_handler(CancelOrStopIntentHandler())
+sb.add_request_handler(SessionEndedRequestHandler())
+sb.add_request_handler(IntentReflectorHandler()) # make sure IntentReflectorHandler is last so it doesn't override your custom intent handlers
+
+sb.add_exception_handler(CatchAllExceptionHandler())
+
+lambda_handler = sb.lambda_handler()
