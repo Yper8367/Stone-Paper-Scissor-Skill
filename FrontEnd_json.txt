@@ -1,0 +1,143 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "stone paper scissor game",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "StonePaperScissorIntent",
+                    "slots": [
+                        {
+                            "name": "obj",
+                            "type": "Object",
+                            "samples": [
+                                "try {obj}",
+                                "i get you take {obj}",
+                                "Ohh {obj}",
+                                "yes {obj}",
+                                "{obj}",
+                                "OK {obj}"
+                            ]
+                        }
+                    ],
+                    "samples": [
+                        "{obj} is lucky for me take that",
+                        "{obj} is lucky for me ",
+                        "I'll go with {obj}",
+                        "I will go with {obj}",
+                        "i would like to choose {obj}",
+                        "i prefer {obj}",
+                        "take {obj}",
+                        "try {obj}",
+                        "I choose {obj}",
+                        "{obj}"
+                    ]
+                },
+                {
+                    "name": "PlayAgainIntent",
+                    "slots": [],
+                    "samples": [
+                        "lets do it again",
+                        "give me last chance",
+                        "once more",
+                        "try your luck",
+                        "try again",
+                        "one more",
+                        "again"
+                    ]
+                }
+            ],
+            "types": [
+                {
+                    "name": "Object",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "scissor",
+                                "synonyms": [
+                                    "scissors"
+                                ]
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "paper",
+                                "synonyms": [
+                                    "papers"
+                                ]
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "stone",
+                                "synonyms": [
+                                    "stones",
+                                    "rock"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "dialog": {
+            "intents": [
+                {
+                    "name": "StonePaperScissorIntent",
+                    "confirmationRequired": false,
+                    "prompts": {},
+                    "slots": [
+                        {
+                            "name": "obj",
+                            "type": "Object",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.535748294781.374344293382"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "delegationStrategy": "ALWAYS"
+        },
+        "prompts": [
+            {
+                "id": "Elicit.Slot.535748294781.374344293382",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Choose any one from stone paper scissor"
+                    },
+                    {
+                        "type": "PlainText",
+                        "value": "say scissor"
+                    },
+                    {
+                        "type": "PlainText",
+                        "value": "say paper"
+                    },
+                    {
+                        "type": "PlainText",
+                        "value": "say stone"
+                    }
+                ]
+            }
+        ]
+    }
+}
